@@ -71,7 +71,8 @@ APP 底部导航栏保留三个核心 Tab：**流水 (首页)**、**人脉**、*
 **表 1：`contacts` (联系人表)**
 
 * `id` (INTEGER, 主键, 自增)
-* `name` (TEXT, 姓名，不可重复)
+* `name` (TEXT, 姓名，重复则使用`memo`字段区分)
+* `memo` (TEXT, 备注)
 * `pinyin` (TEXT, 姓名的拼音，用于 A-Z 快速排序检索)
 * `created_at` (INTEGER, 创建时间戳)
 
