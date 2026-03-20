@@ -58,6 +58,9 @@ unlinked_spec.ds
 *.jks
 .idea/
 
+# Developer-specific signing config (contains Apple Team ID)
+ios/DeveloperConfig.xcconfig
+
 # iOS/XCode related
 **/ios/**/*.mode1v3
 **/ios/**/*.mode2v3
