@@ -3,6 +3,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../constants/default_events.dart';
+import '../utils/logger.dart';
 
 class DatabaseHelper {
   static DatabaseHelper? _instance;
@@ -17,6 +18,7 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     final dir = await getApplicationDocumentsDirectory();
     final path = join(dir.path, 'ren_qing_note.db');
+    AppLogger.db('数据库初始化: $path');
     return openDatabase(
       path,
       version: 1,
@@ -26,6 +28,8 @@ class DatabaseHelper {
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    AppLogger.db('开始建表, version=$version');
+
     await db.execute('''
       CREATE TABLE contacts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,6 +65,7 @@ class DatabaseHelper {
       )
     ''');
 
+    AppLogger.db('建表完成: contacts, events, records');
     await _seedDefaultEvents(db);
   }
 
@@ -75,5 +80,6 @@ class DatabaseHelper {
       });
     }
     await batch.commit(noResult: true);
+    AppLogger.db('预设事件写入: ${kDefaultEvents.length} 条');
   }
 }

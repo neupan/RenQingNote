@@ -69,9 +69,9 @@ class ContactDetailPage extends ConsumerWidget {
                         amount: balance.abs(),
                         color: balance >= 0 ? Colors.green : Colors.red,
                         prefix: balance > 0
-                            ? '他欠我 '
+                            ? '我欠他 '
                             : balance < 0
-                                ? '我欠他 '
+                                ? '他欠我 '
                                 : '',
                       ),
                     ],

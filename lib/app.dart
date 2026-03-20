@@ -3,6 +3,7 @@ import 'package:local_auth/local_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/utils/logger.dart';
 import 'pages/home/home_page.dart';
 
 class RenQingNoteApp extends StatefulWidget {
@@ -31,6 +32,7 @@ class _RenQingNoteAppState extends State<RenQingNoteApp>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    AppLogger.auth('生命周期变化: $state');
     if (state == AppLifecycleState.resumed) {
       _checkLock();
     } else if (state == AppLifecycleState.paused) {
@@ -40,14 +42,18 @@ class _RenQingNoteAppState extends State<RenQingNoteApp>
 
   Future<void> _markLocked() async {
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool('app_lock_enabled') ?? false) {
+    final enabled = prefs.getBool('app_lock_enabled') ?? false;
+    AppLogger.auth('标记锁定: app_lock_enabled=$enabled');
+    if (enabled) {
       setState(() => _locked = true);
     }
   }
 
   Future<void> _checkLockOnLaunch() async {
     final prefs = await SharedPreferences.getInstance();
-    if (prefs.getBool('app_lock_enabled') ?? false) {
+    final enabled = prefs.getBool('app_lock_enabled') ?? false;
+    AppLogger.auth('启动检查: app_lock_enabled=$enabled');
+    if (enabled) {
       setState(() => _locked = true);
       await _authenticate();
     }
@@ -55,6 +61,7 @@ class _RenQingNoteAppState extends State<RenQingNoteApp>
 
   Future<void> _checkLock() async {
     if (!_locked) return;
+    AppLogger.auth('回到前台, 触发认证');
     await _authenticate();
   }
 
@@ -64,9 +71,10 @@ class _RenQingNoteAppState extends State<RenQingNoteApp>
       final success = await auth.authenticate(
         localizedReason: '请验证身份以使用人情记',
       );
+      AppLogger.auth('认证结果: ${success ? "success" : "failed"}');
       if (success) setState(() => _locked = false);
-    } catch (_) {
-      // 设备不支持时忽略
+    } catch (e) {
+      AppLogger.error('认证异常', e);
     }
   }
 

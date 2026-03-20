@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../core/utils/logger.dart';
 import '../../models/contact.dart';
 import '../../models/event.dart';
 import '../../models/record.dart';
@@ -70,16 +71,21 @@ class _AddRecordPageState extends ConsumerState<AddRecordPage> {
   }
 
   Future<void> _save() async {
+    AppLogger.ui('AddRecord._save: 开始, type=$_type, amount="${_amountController.text}", contactId=${_selectedContact?.id}, eventId=${_selectedEvent?.id}, date=${DateFormat('yyyy-MM-dd').format(_selectedDate)}');
+
     final amount = double.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) {
+      AppLogger.ui('AddRecord._save: 校验失败 - 金额无效');
       _showError('请输入有效金额');
       return;
     }
     if (_selectedContact == null || _selectedContact!.id == null) {
+      AppLogger.ui('AddRecord._save: 校验失败 - 未选择联系人');
       _showError('请选择对象');
       return;
     }
     if (_selectedEvent == null || _selectedEvent!.id == null) {
+      AppLogger.ui('AddRecord._save: 校验失败 - 未选择事件');
       _showError('请选择事件');
       return;
     }
@@ -99,10 +105,11 @@ class _AddRecordPageState extends ConsumerState<AddRecordPage> {
     final notifier = ref.read(recordListProvider.notifier);
     if (_isEditing) {
       await notifier.updateRecord(record);
+      AppLogger.ui('AddRecord._save: 编辑完成, id=${record.id}');
     } else {
       await notifier.add(record);
+      AppLogger.ui('AddRecord._save: 新增完成');
     }
-    ref.invalidate(contactWithBalanceProvider);
     ref.invalidate(contactListProvider);
 
     if (mounted) Navigator.of(context).pop(true);

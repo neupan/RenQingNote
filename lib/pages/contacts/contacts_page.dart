@@ -100,12 +100,12 @@ class _ContactTile extends StatelessWidget {
     Widget balanceChip;
     if (balance > 0) {
       balanceChip = _BalanceLabel(
-        text: '他欠我 ¥${_fmt(balance)}',
+        text: '我欠他 ¥${_fmt(balance)}',
         color: Colors.green,
       );
     } else if (balance < 0) {
       balanceChip = _BalanceLabel(
-        text: '我欠他 ¥${_fmt(-balance)}',
+        text: '他欠我 ¥${_fmt(-balance)}',
         color: Colors.red,
       );
     } else if (totalIn == 0 && totalOut == 0) {

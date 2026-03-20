@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lpinyin/lpinyin.dart';
 
+import '../../../core/utils/logger.dart';
 import '../../../models/contact.dart';
 import '../../../providers/database_provider.dart';
 
@@ -23,12 +24,14 @@ class _ContactPickerState extends ConsumerState<ContactPicker> {
   final _controller = TextEditingController();
   List<Contact> _results = [];
   bool _searching = false;
+  bool _isSelected = false;
 
   @override
   void initState() {
     super.initState();
     if (widget.initialContact != null) {
       _controller.text = widget.initialContact!.name;
+      _isSelected = true;
     }
   }
 
@@ -39,6 +42,7 @@ class _ContactPickerState extends ConsumerState<ContactPicker> {
   }
 
   Future<void> _onChanged(String value) async {
+    _isSelected = false;
     final keyword = value.trim();
     if (keyword.isEmpty) {
       setState(() {
@@ -50,6 +54,7 @@ class _ContactPickerState extends ConsumerState<ContactPicker> {
     setState(() => _searching = true);
     final repo = ref.read(contactRepositoryProvider);
     final contacts = await repo.search(keyword);
+    AppLogger.ui('ContactPicker.search: keyword="$keyword", 匹配 ${contacts.length} 个');
     if (mounted) {
       setState(() {
         _results = contacts;
@@ -61,24 +66,40 @@ class _ContactPickerState extends ConsumerState<ContactPicker> {
   void _selectContact(Contact contact) {
     _controller.text = contact.name;
     widget.onSelected(contact);
-    setState(() => _results = []);
+    setState(() {
+      _results = [];
+      _isSelected = true;
+    });
     FocusScope.of(context).unfocus();
   }
 
   Future<void> _createAndSelect(String name) async {
+    AppLogger.ui('ContactPicker.create: name="$name"');
     final now = DateTime.now().millisecondsSinceEpoch;
     final pinyin = PinyinHelper.getPinyin(name, separator: '');
     final contact = Contact(name: name, pinyin: pinyin, createdAt: now);
     final repo = ref.read(contactRepositoryProvider);
     final id = await repo.insert(contact);
     final created = contact.copyWith(id: id);
+    AppLogger.ui('ContactPicker.create: 完成, id=$id');
     _selectContact(created);
+    
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('已成功创建新联系人：$name'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final keyword = _controller.text.trim();
     final exactMatch = _results.any((c) => c.name == keyword);
+    final showDropdown =
+        !_isSelected && (_results.isNotEmpty || (keyword.isNotEmpty && !exactMatch));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -95,7 +116,7 @@ class _ContactPickerState extends ConsumerState<ContactPicker> {
           onChanged: _onChanged,
         ),
         if (_searching) const LinearProgressIndicator(),
-        if (_results.isNotEmpty || (keyword.isNotEmpty && !exactMatch))
+        if (showDropdown)
           Container(
             constraints: const BoxConstraints(maxHeight: 200),
             margin: const EdgeInsets.only(top: 4),
