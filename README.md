@@ -120,7 +120,19 @@ cd RenQingNote
 flutter pub get
 ```
 
-### 3. 运行 (Debug 模式)
+### 3. 配置 iOS 签名 (仅 iOS 开发需要)
+
+```bash
+cp ios/DeveloperConfig.xcconfig.example ios/DeveloperConfig.xcconfig
+```
+
+编辑 `ios/DeveloperConfig.xcconfig`，将 `YOUR_TEAM_ID_HERE` 替换为你的 Apple Developer Team ID。
+
+> Team ID 可在 [Apple Developer 账户](https://developer.apple.com/account) → Membership Details 中查看。
+
+如果不配置此文件，也可以在 Xcode 中手动选择签名团队。
+
+### 4. 运行 (Debug 模式)
 
 ```bash
 # iOS 模拟器
@@ -133,13 +145,13 @@ flutter run -d android
 flutter run
 ```
 
-### 4. 静态分析
+### 5. 静态分析
 
 ```bash
 flutter analyze
 ```
 
-### 5. 构建发布包
+### 6. 构建发布包
 
 ```bash
 # Android APK
