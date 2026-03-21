@@ -33,11 +33,10 @@ class _RenQingNoteAppState extends State<RenQingNoteApp>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     AppLogger.auth('生命周期变化: $state');
-    if (state == AppLifecycleState.resumed) {
-      _checkLock();
-    } else if (state == AppLifecycleState.paused) {
+    if (state == AppLifecycleState.paused) {
       _markLocked();
     }
+    // 移除 resumed 时的自动认证，避免原生弹窗导致的无限死循环
   }
 
   Future<void> _markLocked() async {
@@ -55,14 +54,8 @@ class _RenQingNoteAppState extends State<RenQingNoteApp>
     AppLogger.auth('启动检查: app_lock_enabled=$enabled');
     if (enabled) {
       setState(() => _locked = true);
-      await _authenticate();
+      // 启动时也改为不自动弹出，统一由用户点击按钮触发
     }
-  }
-
-  Future<void> _checkLock() async {
-    if (!_locked) return;
-    AppLogger.auth('回到前台, 触发认证');
-    await _authenticate();
   }
 
   Future<void> _authenticate() async {
